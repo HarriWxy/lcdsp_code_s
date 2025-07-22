@@ -2,17 +2,17 @@
 
 Welcome to the official PyTorch implementation of the paper:
 
-"Complex Instruction Following with Diverse Style Policies" 
+"Complex Instruction Following with Diverse Style Policies in Football Games" 
 
 This repository includes the code and model for grf environment inference. The training code is currently being refactored and organized for better readability and reproducibility.
 
 Here is an overview of the inference process:
 
-<img src="figures\inference_process.png" alt="LCDSP_inference" width="800">
+<img src="figures\Inference_Process.png" alt="LCDSP_inference" width="800">
 
-Here is an overview of the DTP prompt:
+Here is an overview of the style interpreter:
 
-<img src="figures\prompt.png" alt="LCDSP_prompt" width="800">
+<img src="figures\style_interpreter.png" alt="LCDSP_style_interpreter" width="800">
 
 ## Environment
 
@@ -100,28 +100,10 @@ After starting the game, make sure to click elsewhere with the mouse, and avoid 
 
 Use Ctrl+C in the command line to close the game and the input subprocess.
 
----
-## Choose a scenario, run with base style parameters
 
 The following command will run using a pre-configured style parameter, and in the 5v5 mode, the opponent will also use this style parameter.
 
 The team wearing yellow uniforms is my_ai, the team wearing blue uniforms is the opponent.
-
-### Sigle-player scenario
-
-```python
-python run_log.py --my_ai lcdsp_single_player --opponent noop_AI --env instruction_follow_single --agent_type agents_single_player
-```
-
----
-### Two-player scenario
-
-```python
-python run_log.py --my_ai lcdsp_two_player --opponent noop_AI --env instruction_follow_2v2 --agent_type agents_two_player
-```
-
----
-### 5v5 scenario
 
 The opponent can choose to engage in self-play using lcdsp_two_player or compete against noop_AI and buildin_AI.
 
@@ -134,81 +116,11 @@ python run_log.py --my_ai lcdsp_5v5 --opponent lcdsp_5v5 --env football_5v5_mali
 <img src="figures\param_control.gif" width="1000" alt="param control">
 <br>
 
-In all three scenarios, the corresponding style parameters can be adjusted through Box UI input parameters. You only need to set style_input to True in the arguments. An input box will appear shortly thereafter. 
+The corresponding style parameters can be adjusted through Box UI input parameters. You only need to set style_input to True in the arguments. An input box will appear shortly thereafter. 
 
 After launching the game environment, enter the desired style parameters and simply click submit, you can change the style parameters while the environment is running. You can also modify the initial style parameters in the corresponding JSON file within the *base_style_parameters* folder before launching.
 
 The team wearing yellow uniforms is the instruction-controlled team, attacking towards the right side of the field. 
-
-### Sigle-player scenario
-
-```python
-python run_log.py --my_ai lcdsp_single_player --opponent noop_AI --env instruction_follow_single --agent_type agents_single_player --style_input True
-```
-
-Below are the adjustable style parameters for a single-player scenario and their corresponding meanings:
-
-- active_area_x
-    - `0`  front
-    - `1` middle
-    - `2` back
-- active_area_y
-    - `0` left
-    - `1` center
-    - `2` right
-- shot 
-    - `0` goal area shot
-    - `1` penalty area shot
-- move
-    - `0` run
-    - `1` sprint
-    - `2` dribble
-
-The remaining style parameters not mentioned for this scenario are not utilized and should retain the same values as the default configuration.
-
-To execute the *shooting* behavioral style, set the active_area to 0 and goal to 0.1. Set *move* and *shot* as one-hot vectors to select the corresponding behaviors.
-
-To execute the *navigate* behavioral style, set the *shot* to 0 and *goal* to 0. Set *move* and *active_area_x*, *active_area_y* as one-hot vectors to select the corresponding actions.
-
----
-### Two-player scenario
-
-```python
-python run_log.py --my_ai lcdsp_two_player --opponent noop_AI --env instruction_follow_2v2 --agent_type agents_two_player --style_input True
-```
-
-Below are the adjustable style parameters for a two-player scenario and their corresponding meanings:
-
-- formation
-    - `0`  front
-    - `1` middle
-    - `2` back
-- move
-    - `0` run
-    - `1` sprint
-    - `2` dribble
-- shot 
-    - `0` goal area shot
-    - `1` penalty area shot
-- hold_ball
-    - `0` not active
-    - `1` active
-- pass
-    - `0` not active
-    - `1` active
-
-The remaining style parameters not mentioned for this scenario are not utilized and should retain the same values as the default configuration.
-
-- To execute the *shooting* behavioral style, set *goal* to 0.5, and set *pass* and *hold_ball* to 0. Combining the indices of *shot* and *move* can generate corresponding behaviors.
-
-- To execute the pass behavioral style, set *pass* to 1, and set *shot*, *goal*, and *hold_ball* to 0. Adjusting *formation* allows for changes in the formation.
-
-- To execute the hold ball behavioral style, Set hold_ball to 1, and set *shot*, *goal*, and *pass* to 0. Adjusting *formatio*n allows for changes in the formation.
-
-
-
----
-### 5v5 scenario
 
 The opponent can choose to engage in self-play using lcdsp_5v5 or compete against noop_AI and buildin_AI.
 
@@ -223,29 +135,13 @@ python run_log.py --my_ai lcdsp_5v5 --opponent lcdsp_5v5 --env football_5v5_mali
 <img src="figures\language_control.gif" width="1000" alt="language control">
 <br>
 
-In all three scenarios, natural language input can be used to direct the multi-style policy to follow instructions, it requires using your own OpenAI API Key at language_control/llm.py *completion* function. 
+Natural language input can be used to direct the multi-style policy to follow instructions.
 
 You can select the instructions used in the paper from language_control/scenario/instructions, or input your own desired instruction.
 
 If a command cannot be parsed into style parameters, it will revert to the default style.
 
-### Sigle-player scenario
-
-```python
-python run_log.py --my_ai lcdsp_single_player --opponent noop_AI --env instruction_follow_single --agent_type agents_single_player --language_input True
-```
-
----
-### Two-player scenario
-
-```python
-python run_log.py --my_ai lcdsp_two_player --opponent noop_AI --env instruction_follow_2v2 --agent_type agents_two_player --language_input True
-```
-
----
-### 5v5 scenario
-
-The opponent can choose to engage in self-play using lcdsp_two_player or compete against noop_AI and buildin_AI.
+The opponent can choose to engage in self-play using lcdsp_5v5 or compete against buildin_AI.
 
 ```python
 python run_log.py --my_ai lcdsp_5v5 --opponent lcdsp_5v5 --env football_5v5_malib --agent_type agents_5v5 --language_input True

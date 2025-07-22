@@ -86,7 +86,7 @@ def get_joint_action_eval(game, multi_part_agent_ids, policy_list, actions_space
                 a_obs = all_observes[agent_id]
                 obs_batch.append(a_obs)
             if len(obs_batch) > 0:
-                if 'lcmsp' in policy_list[policy_i] and 'mask' not in policy_list[policy_i]:
+                if 'lcdsp' in policy_list[policy_i] and 'mask' not in policy_list[policy_i]:
                     each = eval(function_name)(obs_batch, action_space_list[i], game.is_act_continuous, style_state)
                 else:
                     each = eval(function_name)(obs_batch, action_space_list[i], game.is_act_continuous)
@@ -143,8 +143,8 @@ def style_input_process(queue, data_dict):
     root.mainloop()
 
 def run_game(g, env_name, multi_part_agent_ids, actions_spaces, policy_list, render_mode, style_states, agent_type, 
-             queue, language_input=False, style_input=False):
-  
+             queue, language_input=False, style_input=False, predictor=None):
+
     log_path = os.getcwd() + '/logs/'
     if not os.path.exists(log_path):
         os.mkdir(log_path)
@@ -199,8 +199,9 @@ def run_game(g, env_name, multi_part_agent_ids, actions_spaces, policy_list, ren
             if language_input:
                 user_input = queue.get()
                 print(f"The user input text is: {user_input}")
-                instruction = natural_language_to_style(user_input)
-                factor = word_to_reward_factor(instruction)
+                # instruction = natural_language_to_style(user_input)
+                # factor = word_to_reward_factor(instruction)
+                factor = predictor.predict(user_input)
                 style_states[0].update(factor)
                 print("The style parameters for the left-side team are now: ", style_states[0])
             if style_input:
@@ -306,13 +307,13 @@ def concate_style_state(style_states):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--my_ai", default="lcmsp_two_player",
-                        help="noop_AI/buildin_AI/lcmsp_single_player/lcmsp_two_player/lcmsp_5v5")
-    parser.add_argument("--opponent", default="noop_AI",
-                        help="noop_AI/buildin_AI/lcmsp_5v5")
-    parser.add_argument("--env", default="instruction_follow_2v2",
-                        help="instruction_follow_single/instruction_follow_2v2/football_5v5_malib")
-    parser.add_argument("--agent_type", default="agents_two_player", help="agents_single_player/agents_two_player/agents_5v5")
+    parser.add_argument("--my_ai", default="lcdsp_5v5",
+                        help="buildin_AI/lcdsp_5v5")
+    parser.add_argument("--opponent", default="lcdsp_5v5",
+                        help="buildin_AI/lcdsp_5v5")
+    parser.add_argument("--env", default="football_5v5_malib",
+                        help="football_5v5_malib")
+    parser.add_argument("--agent_type", default="agents_5v5", help="agents_5v5")
     parser.add_argument("--language_input", default=False, help="True/False")
     parser.add_argument("--style_input", default=False, help="True/False")
     args = parser.parse_args()
@@ -331,18 +332,12 @@ if __name__ == "__main__":
     
     current_dir = os.path.dirname(os.path.abspath(__file__))
     sys.path.append(os.path.join(current_dir, 'language_control'))
-    if args.env == "instruction_follow_single":
-        style_config = 'base_style_parameters\\style_single_player.json'
-        sys.path.append(os.path.join(current_dir, 'language_control\\single_player'))
-    elif args.env == "instruction_follow_2v2":
-        style_config = 'base_style_parameters\\style_two_player.json'
-        sys.path.append(os.path.join(current_dir, 'language_control\\two_player'))
-    elif args.env == "football_5v5_malib":
+
+    if args.env == "football_5v5_malib":
         style_config = 'base_style_parameters\\style_5v5.json'
         sys.path.append(os.path.join(current_dir, 'language_control\\5v5'))
     with open(style_config) as f:
         style_factors = f.read()
-    from natural_language_to_style import natural_language_to_style, word_to_reward_factor
     style_factors = json.loads(style_factors)
     style_state_1, style_state_2 = style_factors["style_state_1"], style_factors["style_state_2"]
     
@@ -353,7 +348,10 @@ if __name__ == "__main__":
     language_input = args.language_input
     style_input = args.style_input
     queue = None
+    predictor = None
     if language_input:
+        from natural_language_to_style import StyleInterpreterPredictor
+        predictor = StyleInterpreterPredictor(model_path=os.path.join(current_dir, 'language_models', 'trained_model.pth'))  # 需要提供实际模型路径
         queue = multiprocessing.Queue()
         p = multiprocessing.Process(target=natural_language_input_process, args=(queue,))
         p.start()
@@ -365,7 +363,7 @@ if __name__ == "__main__":
         while True:
             run_game(game, args.env, multi_part_agent_ids, actions_space,
                     policy_list, render_mode, [style_state_1, style_state_2], args.agent_type, 
-                    queue=queue, language_input=language_input, style_input=style_input)
+                    queue=queue, language_input=language_input, style_input=style_input, predictor=predictor)
             game = make(args.env)
             ep_cnt += 1
     except KeyboardInterrupt:
