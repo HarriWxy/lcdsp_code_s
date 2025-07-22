@@ -94,6 +94,10 @@ cp -r env/random_ball_scenarios/* your_conda_path/envs/grf/Lib/site-packages/gfo
 pip install -r requirements.txt
 ```
 
+### 5. Download the pre-trained language model
+
+download the pre-trained language model from [google_dirve](https://drive.google.com/file/d/1C_sFRU4pcZQiC7o3JVSo3A2mcTNXN8eY/view?usp=drive_link) and place it in the `language_models` folder.
+
 # Run a game
 
 After starting the game, make sure to click elsewhere with the mouse, and avoid clicking on the game screen afterward to prevent it from freezing.
