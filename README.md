@@ -8,7 +8,7 @@ This repository includes the code and model for grf environment inference. The t
 
 Here is an overview of the inference process:
 
-<img src="figures\Inference_Process.png" alt="LCDSP_inference" width="800">
+<img src="figures\inference_process.png" alt="LCDSP_inference" width="800">
 
 Here is an overview of the style interpreter:
 
