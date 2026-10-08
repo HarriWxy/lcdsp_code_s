@@ -334,8 +334,10 @@ if __name__ == "__main__":
     sys.path.append(os.path.join(current_dir, 'language_control'))
 
     if args.env == "football_5v5_malib":
-        style_config = 'base_style_parameters\\style_5v5.json'
-        sys.path.append(os.path.join(current_dir, 'language_control\\5v5'))
+        style_config = os.path.join(
+            current_dir, 'base_style_parameters', 'style_5v5.json'
+        )
+        sys.path.append(os.path.join(current_dir, 'language_control', '5v5'))
     with open(style_config) as f:
         style_factors = f.read()
     style_factors = json.loads(style_factors)

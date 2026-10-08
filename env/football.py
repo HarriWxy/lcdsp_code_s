@@ -40,7 +40,7 @@ class Football(Game, DictObservation):
         )
 
         self.load_action_space(conf)
-        obs_list = self.env_core.reset()
+        obs_list = self._reset_env_core()
         self.won = {}
         self.joint_action_space = self.set_action_space()
         self.current_state = self.get_sorted_next_state(obs_list)
@@ -124,6 +124,11 @@ class Football(Game, DictObservation):
         action_space = [[self.env_core.action_space] for _ in range(self.n_player)]
         return action_space
 
+    def _reset_env_core(self):
+        # GFootball 2.x exposes the legacy reset() API. Gymnasium's Wrapper
+        # forwards seed/options to it, which that API does not accept.
+        return self.env_core.unwrapped.reset()
+
     def check_win(self):
         left_sum = self.n_return[0]
         right_sum = self.n_return[self.agent_nums[0]]
@@ -135,7 +140,7 @@ class Football(Game, DictObservation):
             return '-1'
 
     def reset(self):
-        obs_list = self.get_sorted_next_state(self.env_core.reset())
+        obs_list = self.get_sorted_next_state(self._reset_env_core())
         self.step_cnt = 0
         self.done = False
         self.current_state = obs_list
